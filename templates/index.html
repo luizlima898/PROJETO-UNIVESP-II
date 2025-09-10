@@ -58,10 +58,21 @@ document.getElementById("reloadPage").addEventListener("click", reloadPage);
 <h2> Pesquisar Produtos</h2>		
 <input type="text" id="campoBusca" placeholder="Digite o produto...">
 <button onclick="pesquisar()">Pesquisar</button>
-<button onclick="atualizar()">Atualizar</button>
-<button onclick="excluirProduto()">Excluir</button>
 <button onclick="reloadPage()">Omitir</button>
 <div id="resultados"></div>
+<table id="tabela_pesquisa">
+        <thead id = "headone">
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Estoque</th>
+                <th>Local</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Os dados da tabela serão preenchidos aqui dinamicamente -->
+        </tbody>
+    </table>
 
 <script>
 function pesquisar() {
@@ -92,6 +103,27 @@ function pesquisar() {
             console.error("Erro na pesquisa:", error);
         });
 }
+</script>
+  
+<script>
+function pesquisar() {
+             fetch(`/pesquisar`)
+        .then(response => response.json()) // <- agora tratamos JSON
+        .then(data => {
+                    const tabela = document.getElementById('tabela_pesquisa').getElementsByTagName('tbody')[0];
+                    tabela.innerHTML = ''; // Limpa os dados anteriores
+                    data.forEach(linha => {
+                        const novaLinha = tabela.insertRow(); // Cria uma nova linha
+                        linha.forEach(celula => {
+                            const novaCelula = novaLinha.insertCell(); // Cria uma nova célula
+							novaCelula.textContent = celula; // Insere o conteúdo na célula
+                        });
+                    });
+                })
+                .catch(error => console.error("Erro ao buscar os dados:", error));
+				});
+        }
+
 </script>
 
   <h2>Lista de Produtos</h2>
@@ -141,52 +173,27 @@ document.getElementById("reloadPage").addEventListener("click", reloadPage);
 
 
 	</script> 
-  <script>
-   
-    // Função para excluir produto
-    function excluirProduto(codigo) {
-     fetch('/excluir/${codigo}', {method: "DELETE"
-	 })
-	 .then(response => {
-		if(!response.ok){
-			return response.json().then(err => {
-			throw new Error(err.error);});
-			}
-		return response.json();
-		})
-	.then(data => {
-		if (data.success) {
-			document.getElementById('linha-${codigo}').remove();
-		} else {
-			alert("Erro ao excluir o produto: " + data.error);
-			}
-	})
-	.catch (error => { 
-		console.error("Erro capturado: ", error);
-		alert("Ocorreu um erro ao tentar excluir o produto:" + error.message);
-		});
-	}
-
-     
-  </script>
+  
   <h2>Atualização de dados</h2>
   <label>Código:<input type="number" id="codigo" placeholder = "Código do produto"></label>
   <label>Nome:<input type="text" id="nome" placeholder="Novo nome">
   <label>Estoque: <input type="number" id="estoque" placeholder="Novo estoque"></label>
   <label>Local: <input type="text" id="local" placeholder="Novo local"></label><br><br>
+  <button onclick="atualizar()">Atualizar</button>
+  <button onclick="deletar(1, this)">Excluir</button>
   <script>
     function atualizar() {
-      const codigo = document.getElementById("codigo").value;
-      const nome = document.getElementById("nome").value;
-	  const estoque = document.getElementById("estoque").value;
-      const local = document.getElementById("local").value;
+      const id_registro = document.getElementById("codigo").value;
+      const novo_nome = document.getElementById("nome").value;
+	  const novo_estoque = document.getElementById("estoque").value;
+      const novo_local = document.getElementById("local").value;
 
       fetch("/atualizar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ codigo: codigo, nome: nome, estoque: estoque, local:local })
+        body: JSON.stringify({ id_registro: codigo, novo_nome: nome, novo_estoque: estoque, novo_local:local })
       })
       .then(res => res.json())
       .then(data => {

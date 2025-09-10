@@ -64,24 +64,7 @@ def pesquisar_produto():
     conn.close()
     return jsonify(produtos=produtos, termo=termo)
     
-# Rota para excluir produto pelo ID
-@app.route('/excluir/<int:codigo>', methods=['DELETE'])
-def excluir(codigo):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        sql = "DELETE FROM estoque WHERE codigo = %s"
-        cursor.execute(sql, (codigo,))
-        conn.commit()
-        cursor.close()
-        conn.close()
 
-        return jsonify({"success": True, "codigo": codigo})
-            
-    except Exception as e:
-        print("Erro ao excluir produto: ", e)   
-        return jsonify({"success": False, "error": str(e)}), 500
-    
     
 # Rota para buscar os dados da tabela no MySQL
 @app.route('/get-data', methods=['GET'])
