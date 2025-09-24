@@ -19,6 +19,7 @@
   <p id="resposta"></p>
 
   <script>
+  //Código Javascript para inserir produtos no estoque
     document.getElementById("formProduto").addEventListener("submit", async function(event) {
       event.preventDefault();
 
@@ -58,12 +59,25 @@ document.getElementById("reloadPage").addEventListener("click", reloadPage);
 <h2> Pesquisar Produtos</h2>		
 <input type="text" id="campoBusca" placeholder="Digite o produto...">
 <button onclick="pesquisar()">Pesquisar</button>
-<button onclick="atualizar()">Atualizar</button>
-<button onclick="excluirProduto()">Excluir</button>
+<button onclick="pesquisarTabela()">Pesquisar Tabela</button>
 <button onclick="reloadPage()">Omitir</button>
 <div id="resultados"></div>
+<table id="tabela_pesquisa">
+        <thead id = "headone">
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Estoque</th>
+                <th>Local</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Os dados da tabela serão preenchidos aqui dinamicamente -->
+        </tbody>
+    </table>
 
 <script>
+//Codigo para retirar da tabela uma pesquisa e imprimir em uma lista
 function pesquisar() {
     let termo = document.getElementById("campoBusca").value;
 
@@ -85,13 +99,40 @@ function pesquisar() {
                 // supondo que sua tabela tenha colunas 'codigo', 'nome',  'quantidade', local
                 item.textContent = `Código: ${produto.codigo} - Nome: ${produto.nome} - Quantidade: ${produto.estoque} - Local: ${produto.local}`;
                 lista.appendChild(item);
+				
             });
             container.appendChild(lista);
+			
         })
         .catch(error => {
             console.error("Erro na pesquisa:", error);
         });
 }
+</script>
+  
+<script>
+//O mesmo intuito acima, mas para colocar os dados em uma tabela de pesquisa por nome
+function pesquisarTabela() {
+	let termo = document.getElementById("campoBusca").value;
+        let resposta = fetch(`/pesquisar?termo=${encodeURIComponent(termo)}`);
+		let dados = resposta.json();
+		let tbody = document.querySelector("tabela_pequisa");
+		tbody.innerHTML = ""; //limpa todos os dados anteriores
+		if (dados.length === 0){tbody.innerHTML = "<tr><td colspan = '4' > Nenhum resultado encontrado</td></tr>";
+		} else {
+			dados.forEach(item => {
+				let linha = '<tr>
+				<td>${item.codigo}</td>
+				<td>${item.nome}</td>
+				<td>${item.estoque}</td>
+				<td>${item.local}</td>
+				</tr>';
+				tbody.innerHTML += linha;
+                       });
+               }
+				
+        }
+
 </script>
 
   <h2>Lista de Produtos</h2>
@@ -114,6 +155,7 @@ function pesquisar() {
     </table>
 
     <script>
+	//Codigo para apresentar numa tabela todos os dados existentes
         function fetchDados() {
             fetch('/get-data') // Faz uma solicitação GET para o servidor
                 .then(response => response.json())
@@ -141,52 +183,27 @@ document.getElementById("reloadPage").addEventListener("click", reloadPage);
 
 
 	</script> 
-  <script>
-   
-    // Função para excluir produto
-    function excluirProduto(codigo) {
-     fetch('/excluir/${codigo}', {method: "DELETE"
-	 })
-	 .then(response => {
-		if(!response.ok){
-			return response.json().then(err => {
-			throw new Error(err.error);});
-			}
-		return response.json();
-		})
-	.then(data => {
-		if (data.success) {
-			document.getElementById('linha-${codigo}').remove();
-		} else {
-			alert("Erro ao excluir o produto: " + data.error);
-			}
-	})
-	.catch (error => { 
-		console.error("Erro capturado: ", error);
-		alert("Ocorreu um erro ao tentar excluir o produto:" + error.message);
-		});
-	}
-
-     
-  </script>
+  
   <h2>Atualização de dados</h2>
   <label>Código:<input type="number" id="codigo" placeholder = "Código do produto"></label>
   <label>Nome:<input type="text" id="nome" placeholder="Novo nome">
   <label>Estoque: <input type="number" id="estoque" placeholder="Novo estoque"></label>
   <label>Local: <input type="text" id="local" placeholder="Novo local"></label><br><br>
+  <button onclick="atualizar()">Atualizar</button>
+  <button onclick="deletar(1, this)">Excluir</button>
   <script>
     function atualizar() {
-      const codigo = document.getElementById("codigo").value;
-      const nome = document.getElementById("nome").value;
-	  const estoque = document.getElementById("estoque").value;
-      const local = document.getElementById("local").value;
+      const id_registro = document.getElementById("codigo").value;
+      const novo_nome = document.getElementById("nome").value;
+	  const novo_estoque = document.getElementById("estoque").value;
+      const novo_local = document.getElementById("local").value;
 
       fetch("/atualizar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ codigo: codigo, nome: nome, estoque: estoque, local:local })
+        body: JSON.stringify({ id_registro: codigo, novo_nome: nome, novo_estoque: estoque, novo_local:local })
       })
       .then(res => res.json())
       .then(data => {
